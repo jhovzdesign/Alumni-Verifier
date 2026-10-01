@@ -105,6 +105,12 @@ export const PublicVerificationPortal: React.FC<PublicVerificationPortalProps> =
     }
   };
 
+  const navigateToAdmin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.history.pushState({}, '', '/admin');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between font-sans">
       {/* Official Header */}
@@ -125,7 +131,8 @@ export const PublicVerificationPortal: React.FC<PublicVerificationPortalProps> =
         <div className="sm:absolute sm:top-5 sm:right-6 mt-3 sm:mt-0 flex justify-center">
           <a
             href="/admin"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold tracking-wide transition-colors shadow-xs"
+            onClick={navigateToAdmin}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold tracking-wide transition-colors shadow-xs cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>Registrar Admin Login</span>
@@ -276,7 +283,8 @@ export const PublicVerificationPortal: React.FC<PublicVerificationPortalProps> =
         <div className="pt-2">
           <a
             href="/admin"
-            className="text-[11px] text-slate-600 hover:text-emerald-700 font-semibold underline underline-offset-2 transition-colors"
+            onClick={navigateToAdmin}
+            className="text-[11px] text-slate-600 hover:text-emerald-700 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
           >
             Authorized Registrar Staff Sign-In →
           </a>

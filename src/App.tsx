@@ -14,6 +14,8 @@ import { api } from './services/api.js';
 
 export function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentHash, setCurrentHash] = useState(window.location.hash);
+  const [currentSearch, setCurrentSearch] = useState(window.location.search);
   const [adminUser, setAdminUser] = useState<any>(null);
   const [checkingSession, setCheckingSession] = useState(true);
 
@@ -21,13 +23,36 @@ export function App() {
   const [adminTab, setAdminTab] = useState<AdminTab>('dashboard');
   const [selectedAlumniId, setSelectedAlumniId] = useState<string | null>(null);
 
+  // Handle SPA 404 redirects from static hosts (e.g. GitHub Pages or Vercel static fallback)
+  useEffect(() => {
+    if (sessionStorage.redirect) {
+      const redirectUrl = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      try {
+        const url = new URL(redirectUrl);
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+        setCurrentPath(url.pathname);
+        setCurrentHash(url.hash);
+        setCurrentSearch(url.search);
+      } catch (e) {
+        // ignore fallback parse error
+      }
+    }
+  }, []);
+
   // Synchronize route changes
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
+      setCurrentHash(window.location.hash);
+      setCurrentSearch(window.location.search);
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   // Check admin session on load
@@ -52,6 +77,8 @@ export function App() {
   const navigateTo = (path: string) => {
     window.history.pushState({}, '', path);
     setCurrentPath(path);
+    setCurrentHash(window.location.hash);
+    setCurrentSearch(window.location.search);
   };
 
   const handleAdminLogout = async () => {
@@ -93,8 +120,13 @@ export function App() {
     );
   }
 
-  // Route 2: Admin routes (/admin, /admin/*)
-  const isAdminRoute = currentPath.startsWith('/admin');
+  // Route 2: Admin routes (/admin, /admin/*, #admin, ?admin)
+  const isAdminRoute =
+    currentPath.startsWith('/admin') ||
+    currentHash === '#admin' ||
+    currentHash.startsWith('#/admin') ||
+    currentSearch.includes('admin') ||
+    currentSearch.includes('portal=admin');
 
   if (isAdminRoute) {
     if (checkingSession) {
