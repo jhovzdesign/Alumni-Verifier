@@ -284,7 +284,13 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
         }
       });
 
-      onSuccess(res.alumnus.alumni_id);
+      const createdId =
+        res?.alumnus?.alumni_id ||
+        res?.alumni_id ||
+        res?.id ||
+        alumniId.trim();
+
+      onSuccess(createdId);
     } catch (err: any) {
       setFormError(err.message || 'Failed to save alumni record.');
     } finally {

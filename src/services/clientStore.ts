@@ -316,9 +316,10 @@ class ClientDatabaseStore {
 
     // Card & QR
     const cardId = 'card-' + Date.now();
-    const cardNumber = payload.card_number || `AC-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
-    const issueDate = payload.issue_date || now.slice(0, 10);
-    const expDate = payload.expiration_date || new Date(Date.now() + 5 * 365 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const cardNumber = payload.card?.card_number || payload.card_number || `AC-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
+    const issueDate = payload.card?.issue_date || payload.issue_date || now.slice(0, 10);
+    const expDate = payload.card?.expiration_date || payload.expiration_date || new Date(Date.now() + 5 * 365 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const cardStatus = payload.card?.status || payload.status || 'ACTIVE';
 
     const newCard: AlumniCard = {
       id: cardId,
@@ -326,27 +327,38 @@ class ClientDatabaseStore {
       card_number: cardNumber,
       issue_date: issueDate,
       expiration_date: expDate,
-      status: 'ACTIVE',
+      status: cardStatus,
       created_at: now,
       updated_at: now
     };
     db.cards.unshift(newCard);
 
     const qrId = 'qr-' + Date.now();
-    const qrValue = payload.qr_value || `PU-ALUMNI-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const qrValue = payload.qr?.qr_value || payload.qr_value || `PU-ALUMNI-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const qrStatus = payload.qr?.status || payload.qr_status || 'ACTIVE';
+    const qrImageUrl = payload.qr?.qr_image_url || payload.qr_image_url || '';
 
     const newQR: AlumniQRCode = {
       id: qrId,
       card_id: cardId,
       qr_value: qrValue,
-      status: 'ACTIVE',
+      qr_image_url: qrImageUrl,
+      status: qrStatus,
       uploaded_at: now,
       updated_at: now
     };
     db.qr_codes.unshift(newQR);
 
     this.saveDb(db);
-    return this.getAlumniById(almId);
+    const detail = this.getAlumniById(almId);
+
+    return {
+      alumnus: newAlumnus,
+      alumni_id: newAlumnus.alumni_id,
+      detail,
+      card: newCard,
+      qr: newQR
+    };
   }
 
   public updateCardStatus(cardId: string, status: CardStatus, notes?: string) {

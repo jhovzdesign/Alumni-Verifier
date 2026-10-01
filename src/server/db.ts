@@ -1053,6 +1053,7 @@ class Database {
 
     return {
       alumnus: newAlumnus,
+      alumni_id: newAlumnus.alumni_id,
       academic_records: newAcademicRecords,
       card: newCard,
       qr: newQR
