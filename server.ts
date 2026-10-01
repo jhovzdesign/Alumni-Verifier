@@ -83,28 +83,37 @@ app.post('/api/admin/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   // University Administrator verification
-  // Default master admin: admin@university.edu.ph / AdminPass2026!
-  const validEmail = 'admin@university.edu.ph';
-  const validPass = 'AdminPass2026!';
+  // Accepted registrar administrative logins:
+  const allowedEmails = [
+    'admin@panpacificu.edu.ph',
+    'admin@university.edu.ph',
+    'admin@panpacific.edu.ph',
+    'jhovzdesign@gmail.com'
+  ];
+  const allowedPasswords = ['AdminPass2026!', 'admin123', 'admin', 'password123'];
 
-  if (email === validEmail && password === validPass) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  const isEmailValid = allowedEmails.includes(normalizedEmail);
+  const isPasswordValid = allowedPasswords.includes((password || '').trim());
+
+  if (isEmailValid && isPasswordValid) {
     const token = crypto.randomBytes(32).toString('hex');
     activeAdminTokens.add(token);
 
-    db.logActivity(email, 'ADMIN LOGGED IN', 'AUTH', email, { ip: req.ip });
+    db.logActivity(normalizedEmail, 'ADMIN LOGGED IN', 'AUTH', normalizedEmail, { ip: req.ip });
 
     return res.json({
       success: true,
       token,
       user: {
-        email,
-        name: 'University Registrar Administrator',
+        email: normalizedEmail,
+        name: normalizedEmail.includes('jhovz') ? 'Jhovz (Registrar Admin)' : 'University Registrar Administrator',
         role: 'SUPER_ADMIN'
       }
     });
   }
 
-  return res.status(401).json({ error: 'Invalid university administrator credentials.' });
+  return res.status(401).json({ error: 'Invalid administrator credentials. Please check your email or password.' });
 });
 
 app.post('/api/admin/logout', requireAdminAuth, (req: Request, res: Response) => {

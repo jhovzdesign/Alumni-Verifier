@@ -108,8 +108,8 @@ export const PublicVerificationPortal: React.FC<PublicVerificationPortalProps> =
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between font-sans">
       {/* Official Header */}
-      <header className="bg-white border-b border-slate-200 py-6 px-4 shadow-xs">
-        <div className="max-w-4xl mx-auto text-center space-y-1">
+      <header className="bg-white border-b border-slate-200 py-6 px-4 shadow-xs relative">
+        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center text-center space-y-1">
           <h1 className="font-serif tracking-widest text-xl sm:text-2xl font-bold uppercase text-slate-900">
             Panpacific University
           </h1>
@@ -119,6 +119,17 @@ export const PublicVerificationPortal: React.FC<PublicVerificationPortalProps> =
           <p className="text-[11px] text-slate-600">
             Official University Registrar & Alumni Registry Services
           </p>
+        </div>
+
+        {/* Top-Right Admin Link */}
+        <div className="sm:absolute sm:top-5 sm:right-6 mt-3 sm:mt-0 flex justify-center">
+          <a
+            href="/admin"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold tracking-wide transition-colors shadow-xs"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Registrar Admin Login</span>
+          </a>
         </div>
       </header>
 
@@ -262,6 +273,14 @@ export const PublicVerificationPortal: React.FC<PublicVerificationPortalProps> =
         <p className="text-[11px] text-slate-600">
           Official University Verification Portal · All verifications are cryptographically logged for audit integrity.
         </p>
+        <div className="pt-2">
+          <a
+            href="/admin"
+            className="text-[11px] text-slate-600 hover:text-emerald-700 font-semibold underline underline-offset-2 transition-colors"
+          >
+            Authorized Registrar Staff Sign-In →
+          </a>
+        </div>
       </footer>
     </div>
   );
