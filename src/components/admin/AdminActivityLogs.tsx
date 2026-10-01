@@ -1,0 +1,199 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../../services/api.js';
+import { ActivityLog } from '../../types/alumni.js';
+import { History as HistoryIcon, Search, RefreshCw, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+
+export const AdminActivityLogs: React.FC = () => {
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [query, setQuery] = useState('');
+  const [actionFilter, setActionFilter] = useState('');
+
+  const fetchLogs = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getActivityLogs({
+        query,
+        action: actionFilter,
+        page,
+        limit: 20
+      });
+      setLogs(data.items || []);
+      setTotalPages(data.totalPages || 1);
+      setTotalCount(data.total || 0);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [page, actionFilter]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    fetchLogs();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+        <div>
+          <h1 className="text-xl font-serif font-bold text-slate-900">
+            Administrative Activity Logs
+          </h1>
+          <p className="text-xs text-slate-600">
+            Security audit log recording all university personnel actions and modifications.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-600">
+            Total entries: <strong className="font-mono text-slate-900">{totalCount}</strong>
+          </span>
+          <button
+            onClick={fetchLogs}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-600 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by action, administrator email, or target ID..."
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <select
+              value={actionFilter}
+              onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
+              className="p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
+            >
+              <option value="">All Actions</option>
+              <option value="ADMIN CREATED ALUMNI">ADMIN CREATED ALUMNI</option>
+              <option value="ADMIN UPDATED ALUMNI">ADMIN UPDATED ALUMNI</option>
+              <option value="ADMIN REPLACED CARD">ADMIN REPLACED CARD</option>
+              <option value="ADMIN CHANGED CARD STATUS">ADMIN CHANGED CARD STATUS</option>
+              <option value="ADMIN DISABLED QR">ADMIN DISABLED QR</option>
+              <option value="ADMIN ARCHIVED RECORD">ADMIN ARCHIVED RECORD</option>
+              <option value="ADMIN LOGGED IN">ADMIN LOGGED IN</option>
+              <option value="ADMIN LOGGED OUT">ADMIN LOGGED OUT</option>
+            </select>
+
+            <button
+              type="submit"
+              className="px-4 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setActionFilter(''); setPage(1); }}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Logs Table */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center space-y-2">
+            <Loader2 className="w-8 h-8 text-slate-800 animate-spin mx-auto" />
+            <span className="text-xs text-slate-600">Retrieving activity audit logs...</span>
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="p-12 text-center text-xs text-slate-600">
+            No activity records found.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs divide-y divide-slate-200">
+              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                <tr>
+                  <th className="py-3 px-4">Action</th>
+                  <th className="py-3 px-4">Admin</th>
+                  <th className="py-3 px-4">Target Type</th>
+                  <th className="py-3 px-4">Target ID</th>
+                  <th className="py-3 px-4">Metadata</th>
+                  <th className="py-3 px-4">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {logs.map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">
+                      {log.action}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-700">
+                      {log.admin_id}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600">
+                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-bold">
+                        {log.target_type}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-semibold text-slate-800">
+                      {log.target_id}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600 font-mono text-[10px] max-w-xs truncate" title={JSON.stringify(log.metadata)}>
+                      {log.metadata ? JSON.stringify(log.metadata) : '-'}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
+                      {new Date(log.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="p-1.5 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50 cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="p-1.5 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50 cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

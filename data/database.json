@@ -1,0 +1,489 @@
+{
+  "alumni": [
+    {
+      "id": "alm-1",
+      "alumni_id": "PU-2024-00123",
+      "first_name": "Juan",
+      "middle_name": "Santos",
+      "last_name": "Dela Cruz",
+      "suffix": "",
+      "photo_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      "email": "j.delacruz@alumni.university.edu.ph",
+      "phone": "+63 917 555 0123",
+      "archived": false,
+      "created_at": "2024-06-15T08:00:00.000Z",
+      "updated_at": "2024-06-15T08:00:00.000Z"
+    },
+    {
+      "id": "alm-2",
+      "alumni_id": "PU-2018-00452",
+      "first_name": "Maria",
+      "middle_name": "Clara",
+      "last_name": "Santos",
+      "suffix": "",
+      "photo_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+      "email": "m.santos@alumni.university.edu.ph",
+      "phone": "+63 918 555 0452",
+      "archived": false,
+      "created_at": "2018-04-10T08:00:00.000Z",
+      "updated_at": "2023-04-10T08:00:00.000Z"
+    },
+    {
+      "id": "alm-3",
+      "alumni_id": "PU-2020-00891",
+      "first_name": "Roberto",
+      "middle_name": "Cruz",
+      "last_name": "Gomez",
+      "suffix": "Jr.",
+      "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+      "email": "r.gomez@alumni.university.edu.ph",
+      "phone": "+63 919 555 0891",
+      "archived": false,
+      "created_at": "2020-08-01T08:00:00.000Z",
+      "updated_at": "2025-01-15T08:00:00.000Z"
+    },
+    {
+      "id": "alm-4",
+      "alumni_id": "PU-2015-00033",
+      "first_name": "Elena",
+      "middle_name": "Reyes",
+      "last_name": "Valenzuela",
+      "suffix": "Ph.D.",
+      "photo_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+      "email": "e.valenzuela@alumni.university.edu.ph",
+      "phone": "+63 920 555 0033",
+      "archived": false,
+      "created_at": "2015-05-20T08:00:00.000Z",
+      "updated_at": "2024-02-10T08:00:00.000Z"
+    },
+    {
+      "id": "alm-5",
+      "alumni_id": "PU-2023-01928",
+      "first_name": "Carlo",
+      "middle_name": "David",
+      "last_name": "Mendoza",
+      "suffix": "",
+      "photo_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+      "email": "c.mendoza@alumni.university.edu.ph",
+      "phone": "+63 921 555 1928",
+      "archived": false,
+      "created_at": "2023-07-20T08:00:00.000Z",
+      "updated_at": "2023-07-20T08:00:00.000Z"
+    }
+  ],
+  "academic_records": [
+    {
+      "id": "acad-1",
+      "alumni_id": "PU-2024-00123",
+      "degree_level": "BACHELORS",
+      "degree_program": "Bachelor of Science in Information Technology",
+      "college": "College of Computing and Information Technology",
+      "major": "Information Technology",
+      "graduation_year": 2024,
+      "campus": "Urdaneta Campus",
+      "created_at": "2024-06-15T08:00:00.000Z",
+      "updated_at": "2024-06-15T08:00:00.000Z"
+    },
+    {
+      "id": "acad-2",
+      "alumni_id": "PU-2024-00123",
+      "degree_level": "MASTERS",
+      "degree_program": "Master of Information Technology",
+      "college": "College of Graduate Studies",
+      "major": "Information Technology",
+      "graduation_year": 2026,
+      "campus": "Urdaneta Campus",
+      "created_at": "2026-03-20T08:00:00.000Z",
+      "updated_at": "2026-03-20T08:00:00.000Z"
+    },
+    {
+      "id": "acad-3",
+      "alumni_id": "PU-2018-00452",
+      "degree_level": "BACHELORS",
+      "degree_program": "Bachelor of Science in Nursing",
+      "college": "College of Health Sciences",
+      "major": "Nursing",
+      "graduation_year": 2018,
+      "campus": "Lingayen Campus",
+      "created_at": "2018-04-10T08:00:00.000Z",
+      "updated_at": "2018-04-10T08:00:00.000Z"
+    },
+    {
+      "id": "acad-4",
+      "alumni_id": "PU-2020-00891",
+      "degree_level": "BACHELORS",
+      "degree_program": "Bachelor of Science in Accountancy",
+      "college": "College of Business and Public Administration",
+      "major": "Accountancy",
+      "graduation_year": 2020,
+      "campus": "Dagupan Campus",
+      "created_at": "2020-08-01T08:00:00.000Z",
+      "updated_at": "2020-08-01T08:00:00.000Z"
+    },
+    {
+      "id": "acad-5",
+      "alumni_id": "PU-2015-00033",
+      "degree_level": "BACHELORS",
+      "degree_program": "Bachelor of Science in Biology",
+      "college": "College of Arts and Sciences",
+      "major": "Biology",
+      "graduation_year": 2015,
+      "campus": "Urdaneta Campus",
+      "created_at": "2015-05-20T08:00:00.000Z",
+      "updated_at": "2015-05-20T08:00:00.000Z"
+    },
+    {
+      "id": "acad-6",
+      "alumni_id": "PU-2015-00033",
+      "degree_level": "MASTERS",
+      "degree_program": "Master of Science in Molecular Biology",
+      "college": "College of Graduate Studies",
+      "major": "Molecular Biology",
+      "graduation_year": 2019,
+      "campus": "Urdaneta Campus",
+      "created_at": "2019-06-10T08:00:00.000Z",
+      "updated_at": "2019-06-10T08:00:00.000Z"
+    },
+    {
+      "id": "acad-7",
+      "alumni_id": "PU-2015-00033",
+      "degree_level": "DOCTORATE",
+      "degree_program": "Doctor of Philosophy in Biological Sciences",
+      "college": "College of Graduate Studies",
+      "major": "Biological Sciences",
+      "graduation_year": 2024,
+      "campus": "Urdaneta Campus",
+      "created_at": "2024-02-10T08:00:00.000Z",
+      "updated_at": "2024-02-10T08:00:00.000Z"
+    },
+    {
+      "id": "acad-8",
+      "alumni_id": "PU-2023-01928",
+      "degree_level": "BACHELORS",
+      "degree_program": "Bachelor of Science in Civil Engineering",
+      "college": "College of Engineering and Architecture",
+      "major": "Civil Engineering",
+      "graduation_year": 2023,
+      "campus": "San Carlos Campus",
+      "created_at": "2023-07-20T08:00:00.000Z",
+      "updated_at": "2023-07-20T08:00:00.000Z"
+    }
+  ],
+  "cards": [
+    {
+      "id": "card-1",
+      "alumni_id": "PU-2024-00123",
+      "card_number": "AC-2024-00123",
+      "issue_date": "2024-06-15",
+      "expiration_date": "2029-06-15",
+      "status": "ACTIVE",
+      "created_at": "2024-06-15T08:00:00.000Z",
+      "updated_at": "2026-10-01T03:33:37.926Z",
+      "revocation_reason": "Card reported lost and cancelled by administration"
+    },
+    {
+      "id": "card-2",
+      "alumni_id": "PU-2018-00452",
+      "card_number": "AC-2018-00452",
+      "issue_date": "2018-04-10",
+      "expiration_date": "2023-04-10",
+      "status": "EXPIRED",
+      "created_at": "2018-04-10T08:00:00.000Z",
+      "updated_at": "2023-04-11T08:00:00.000Z"
+    },
+    {
+      "id": "card-3",
+      "alumni_id": "PU-2020-00891",
+      "card_number": "AC-2020-00891",
+      "issue_date": "2020-08-01",
+      "expiration_date": "2025-08-01",
+      "status": "REVOKED",
+      "revocation_reason": "Card reported lost by holder and superseded by university security notice.",
+      "created_at": "2020-08-01T08:00:00.000Z",
+      "updated_at": "2025-01-15T08:00:00.000Z"
+    },
+    {
+      "id": "card-4",
+      "alumni_id": "PU-2015-00033",
+      "card_number": "AC-2024-00033",
+      "issue_date": "2024-01-10",
+      "expiration_date": "2030-01-10",
+      "status": "ACTIVE",
+      "created_at": "2024-01-10T08:00:00.000Z",
+      "updated_at": "2024-01-10T08:00:00.000Z"
+    },
+    {
+      "id": "card-5",
+      "alumni_id": "PU-2023-01928",
+      "card_number": "AC-2023-01928",
+      "issue_date": "2023-07-20",
+      "expiration_date": "2028-07-20",
+      "status": "ACTIVE",
+      "created_at": "2023-07-20T08:00:00.000Z",
+      "updated_at": "2023-07-20T08:00:00.000Z"
+    }
+  ],
+  "qr_codes": [
+    {
+      "id": "qr-1",
+      "card_id": "card-1",
+      "qr_value": "PU-ALUMNI-2024-8X29P7",
+      "status": "ACTIVE",
+      "uploaded_at": "2024-06-15T08:00:00.000Z",
+      "updated_at": "2024-06-15T08:00:00.000Z"
+    },
+    {
+      "id": "qr-2",
+      "card_id": "card-2",
+      "qr_value": "PU-ALUMNI-2018-EX7710",
+      "status": "ACTIVE",
+      "uploaded_at": "2018-04-10T08:00:00.000Z",
+      "updated_at": "2018-04-10T08:00:00.000Z"
+    },
+    {
+      "id": "qr-3",
+      "card_id": "card-3",
+      "qr_value": "PU-ALUMNI-2020-RV9921",
+      "status": "ACTIVE",
+      "uploaded_at": "2020-08-01T08:00:00.000Z",
+      "updated_at": "2020-08-01T08:00:00.000Z"
+    },
+    {
+      "id": "qr-4",
+      "card_id": "card-4",
+      "qr_value": "PU-ALUMNI-2024-DOC482",
+      "status": "ACTIVE",
+      "uploaded_at": "2024-01-10T08:00:00.000Z",
+      "updated_at": "2024-01-10T08:00:00.000Z"
+    },
+    {
+      "id": "qr-5",
+      "card_id": "card-5",
+      "qr_value": "PU-ALUMNI-2023-ENG104",
+      "status": "ACTIVE",
+      "uploaded_at": "2023-07-20T08:00:00.000Z",
+      "updated_at": "2023-07-20T08:00:00.000Z"
+    }
+  ],
+  "verification_logs": [
+    {
+      "id": "vlog-1790825950854",
+      "qr_id": "qr-1",
+      "card_id": "card-1",
+      "alumni_id": "PU-2024-00123",
+      "verification_reference": "VER-2026-8L4APR",
+      "result": "VERIFIED",
+      "verified_at": "2026-10-01T03:39:10.854Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2024-8X29P7"
+    },
+    {
+      "id": "vlog-1790825945993",
+      "qr_id": null,
+      "card_id": null,
+      "alumni_id": null,
+      "verification_reference": "VER-2026-B79N4Y",
+      "result": "NOT_FOUND",
+      "verified_at": "2026-10-01T03:39:05.992Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "UNKNOWN-TEST-TOKEN"
+    },
+    {
+      "id": "vlog-1790825622718",
+      "qr_id": "qr-1",
+      "card_id": "card-1",
+      "alumni_id": "PU-2024-00123",
+      "verification_reference": "VER-2026-UK9PDR",
+      "result": "VERIFIED",
+      "verified_at": "2026-10-01T03:33:42.718Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2024-8X29P7"
+    },
+    {
+      "id": "vlog-1790825610906",
+      "qr_id": "qr-1",
+      "card_id": "card-1",
+      "alumni_id": "PU-2024-00123",
+      "verification_reference": "VER-2026-U45HG8",
+      "result": "REVOKED",
+      "verified_at": "2026-10-01T03:33:30.906Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2024-8X29P7"
+    },
+    {
+      "id": "vlog-1790825568822",
+      "qr_id": "qr-5",
+      "card_id": "card-5",
+      "alumni_id": "PU-2023-01928",
+      "verification_reference": "VER-2026-D42RJJ",
+      "result": "VERIFIED",
+      "verified_at": "2026-10-01T03:32:48.822Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2023-ENG104"
+    },
+    {
+      "id": "vlog-1790825564871",
+      "qr_id": "qr-4",
+      "card_id": "card-4",
+      "alumni_id": "PU-2015-00033",
+      "verification_reference": "VER-2026-BFDQPN",
+      "result": "VERIFIED",
+      "verified_at": "2026-10-01T03:32:44.871Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2024-DOC482"
+    },
+    {
+      "id": "vlog-1790825555341",
+      "qr_id": null,
+      "card_id": null,
+      "alumni_id": null,
+      "verification_reference": "VER-2026-CJJ39B",
+      "result": "NOT_FOUND",
+      "verified_at": "2026-10-01T03:32:35.341Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "UNKNOWN-QR-CODE-123"
+    },
+    {
+      "id": "vlog-1790825549221",
+      "qr_id": "qr-3",
+      "card_id": "card-3",
+      "alumni_id": "PU-2020-00891",
+      "verification_reference": "VER-2026-TZ33AF",
+      "result": "REVOKED",
+      "verified_at": "2026-10-01T03:32:29.221Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2020-RV9921"
+    },
+    {
+      "id": "vlog-1790825541254",
+      "qr_id": "qr-2",
+      "card_id": "card-2",
+      "alumni_id": "PU-2018-00452",
+      "verification_reference": "VER-2026-Z4LAX3",
+      "result": "EXPIRED",
+      "verified_at": "2026-10-01T03:32:21.254Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2018-EX7710"
+    },
+    {
+      "id": "vlog-1790825536339",
+      "qr_id": "qr-1",
+      "card_id": "card-1",
+      "alumni_id": "PU-2024-00123",
+      "verification_reference": "VER-2026-CHDPFB",
+      "result": "VERIFIED",
+      "verified_at": "2026-10-01T03:32:16.338Z",
+      "ip_address": "127.0.0.1",
+      "user_agent": "curl/7.88.1",
+      "searched_token": "PU-ALUMNI-2024-8X29P7"
+    },
+    {
+      "id": "vlog-1",
+      "qr_id": "qr-1",
+      "card_id": "card-1",
+      "alumni_id": "PU-2024-00123",
+      "verification_reference": "VER-2026-8X29P7",
+      "result": "VERIFIED",
+      "verified_at": "2026-09-30T10:15:30.000Z",
+      "ip_address": "120.28.175.44",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)",
+      "searched_token": "PU-ALUMNI-2024-8X29P7"
+    },
+    {
+      "id": "vlog-2",
+      "qr_id": null,
+      "card_id": null,
+      "alumni_id": null,
+      "verification_reference": "VER-2026-9Z10Q3",
+      "result": "NOT_FOUND",
+      "verified_at": "2026-09-30T11:22:15.000Z",
+      "ip_address": "112.198.88.12",
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; SM-S918B)",
+      "searched_token": "FAKE-QR-TOKEN-UNKNOWN"
+    }
+  ],
+  "activity_logs": [
+    {
+      "id": "act-1790825617926-360",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN CHANGED CARD STATUS",
+      "target_type": "CARD",
+      "target_id": "card-1",
+      "metadata": {
+        "card_number": "AC-2024-00123",
+        "previous_status": "REVOKED",
+        "new_status": "ACTIVE"
+      },
+      "created_at": "2026-10-01T03:33:37.926Z"
+    },
+    {
+      "id": "act-1790825606632-388",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN CHANGED CARD STATUS",
+      "target_type": "CARD",
+      "target_id": "card-1",
+      "metadata": {
+        "card_number": "AC-2024-00123",
+        "previous_status": "ACTIVE",
+        "new_status": "REVOKED",
+        "reason": "Card reported lost and cancelled by administration"
+      },
+      "created_at": "2026-10-01T03:33:26.632Z"
+    },
+    {
+      "id": "act-1790825575593-524",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN LOGGED IN",
+      "target_type": "AUTH",
+      "target_id": "admin@university.edu.ph",
+      "metadata": {
+        "ip": "127.0.0.1"
+      },
+      "created_at": "2026-10-01T03:32:55.593Z"
+    },
+    {
+      "id": "act-1",
+      "admin_id": "admin@university.edu.ph",
+      "action": "SYSTEM INITIALIZATION",
+      "target_type": "AUTH",
+      "target_id": "SYSTEM",
+      "metadata": {
+        "note": "Initial database bootstrap and official verification records verified."
+      },
+      "created_at": "2026-09-30T08:00:00.000Z"
+    },
+    {
+      "id": "act-2",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN REGISTERED ALUMNI",
+      "target_type": "ALUMNI",
+      "target_id": "PU-2024-00123",
+      "metadata": {
+        "name": "Juan Santos Dela Cruz",
+        "program": "BS Information Technology"
+      },
+      "created_at": "2024-06-15T08:00:00.000Z"
+    },
+    {
+      "id": "act-3",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN REVOKED CARD",
+      "target_type": "CARD",
+      "target_id": "card-3",
+      "metadata": {
+        "card_number": "AC-2020-00891",
+        "reason": "Lost card reported"
+      },
+      "created_at": "2025-01-15T08:00:00.000Z"
+    }
+  ]
+}

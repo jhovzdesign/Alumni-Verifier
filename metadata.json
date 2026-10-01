@@ -1,0 +1,7 @@
+{
+  "name": "VeriAlumni - University Alumni QR Verification & Certificate System",
+  "description": "Official, secure, mobile-first Alumni QR Verification & Digital Certificate System for university administrators and public verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
