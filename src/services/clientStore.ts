@@ -230,14 +230,20 @@ class ClientDatabaseStore {
     const page = params.page || 1;
     const limit = params.limit || 10;
     const start = (page - 1) * limit;
+    const pageItems = populated.slice(start, start + limit);
 
     return {
-      data: populated.slice(start, start + limit),
+      items: pageItems,
+      data: pageItems,
+      total: populated.length,
+      page,
+      limit,
+      totalPages: Math.ceil(populated.length / limit) || 1,
       pagination: {
         total: populated.length,
         page,
         limit,
-        totalPages: Math.ceil(populated.length / limit)
+        totalPages: Math.ceil(populated.length / limit) || 1
       }
     };
   }
@@ -410,51 +416,143 @@ class ClientDatabaseStore {
     return qr;
   }
 
-  public getCards(params: any) {
+  public getCards(params?: any) {
     const db = this.getDb();
-    const cards = db.cards.map(c => {
+    const now = new Date();
+    return db.cards.map(c => {
       const alumnus = db.alumni.find(a => a.alumni_id === c.alumni_id);
       const qr = db.qr_codes.find(q => q.card_id === c.id);
+      const expDate = new Date(c.expiration_date + 'T23:59:59Z');
+      let effectiveStatus: CardStatus = c.status;
+      if (c.status === 'REVOKED') {
+        effectiveStatus = 'REVOKED';
+      } else if (c.status === 'EXPIRED' || now > expDate) {
+        effectiveStatus = 'EXPIRED';
+      }
       return {
         ...c,
+        effective_status: effectiveStatus,
+        alumni_name: alumnus ? `${alumnus.first_name} ${alumnus.last_name}` : 'Unknown',
+        qr_value: qr?.qr_value || 'None',
+        qr_status: qr?.status || 'None',
         alumnus,
         qr
       };
     });
-    return { data: cards, pagination: { total: cards.length, page: 1, limit: 50, totalPages: 1 } };
   }
 
-  public getQRCodes(params: any) {
+  public getQRCodes(params?: any) {
     const db = this.getDb();
-    const qrs = db.qr_codes.map(q => {
+    return db.qr_codes.map(q => {
       const card = db.cards.find(c => c.id === q.card_id);
       const alumnus = card ? db.alumni.find(a => a.alumni_id === card.alumni_id) : undefined;
       return {
         ...q,
+        card_number: card?.card_number || 'N/A',
+        alumni_name: alumnus ? `${alumnus.first_name} ${alumnus.last_name}` : 'Unknown',
+        alumni_id: card?.alumni_id || 'N/A',
+        card_status: card?.status || 'UNKNOWN',
         card,
         alumnus
       };
     });
-    return { data: qrs, pagination: { total: qrs.length, page: 1, limit: 50, totalPages: 1 } };
   }
 
-  public getVerificationLogs(params: any) {
+  public getVerificationLogs(params?: any) {
     const db = this.getDb();
-    const logs = db.verification_logs.map(v => {
+    const query = (params?.query || '').toLowerCase();
+    const result = params?.result || '';
+    let logs = [...db.verification_logs];
+    if (query) {
+      logs = logs.filter(l =>
+        (l.verification_reference || '').toLowerCase().includes(query) ||
+        (l.searched_token || '').toLowerCase().includes(query) ||
+        (l.alumni_id && l.alumni_id.toLowerCase().includes(query)) ||
+        (l.ip_address || '').toLowerCase().includes(query)
+      );
+    }
+    if (result) {
+      logs = logs.filter(l => l.result === result);
+    }
+    const enriched = logs.map(v => {
       const alumnus = v.alumni_id ? db.alumni.find(a => a.alumni_id === v.alumni_id) : undefined;
       const card = v.card_id ? db.cards.find(c => c.id === v.card_id) : undefined;
       return {
         ...v,
-        alumnus,
-        card
+        alumni_name: alumnus ? `${alumnus.first_name} ${alumnus.last_name}` : 'N/A',
+        card_number: card ? card.card_number : 'N/A'
       };
     });
-    return { data: logs, pagination: { total: logs.length, page: 1, limit: 50, totalPages: 1 } };
+    const page = params?.page || 1;
+    const limit = params?.limit || 15;
+    const startIndex = (page - 1) * limit;
+    const paginated = enriched.slice(startIndex, startIndex + limit);
+    return {
+      items: paginated,
+      data: paginated,
+      total: enriched.length,
+      page,
+      limit,
+      totalPages: Math.ceil(enriched.length / limit) || 1,
+      pagination: {
+        total: enriched.length,
+        page,
+        limit,
+        totalPages: Math.ceil(enriched.length / limit) || 1
+      }
+    };
   }
 
-  public getActivityLogs(params: any) {
+  public getActivityLogs(params?: any) {
     const db = this.getDb();
-    return { data: db.activity_logs || [], pagination: { total: (db.activity_logs || []).length, page: 1, limit: 50, totalPages: 1 } };
+    const query = (params?.query || '').toLowerCase();
+    const action = params?.action || '';
+    let logs = [...(db.activity_logs || [])];
+    if (query) {
+      logs = logs.filter(l =>
+        (l.action || '').toLowerCase().includes(query) ||
+        (l.admin_id || '').toLowerCase().includes(query) ||
+        (l.target_id || '').toLowerCase().includes(query)
+      );
+    }
+    if (action) {
+      logs = logs.filter(l => l.action === action);
+    }
+    const page = params?.page || 1;
+    const limit = params?.limit || 20;
+    const startIndex = (page - 1) * limit;
+    const paginated = logs.slice(startIndex, startIndex + limit);
+    return {
+      items: paginated,
+      data: paginated,
+      total: logs.length,
+      page,
+      limit,
+      totalPages: Math.ceil(logs.length / limit) || 1,
+      pagination: {
+        total: logs.length,
+        page,
+        limit,
+        totalPages: Math.ceil(logs.length / limit) || 1
+      }
+    };
+  }
+
+  public logActivity(admin_id: string, action: string, target_type: 'ALUMNI' | 'CARD' | 'QR' | 'ACADEMIC_RECORD' | 'AUTH', target_id: string, metadata?: Record<string, any>) {
+    const db = this.getDb();
+    const log: ActivityLog = {
+      id: 'act-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      admin_id,
+      action,
+      target_type,
+      target_id,
+      metadata,
+      created_at: new Date().toISOString()
+    };
+    if (!db.activity_logs) db.activity_logs = [];
+    db.activity_logs.unshift(log);
+    this.saveDb(db);
+    return log;
   }
 }
 

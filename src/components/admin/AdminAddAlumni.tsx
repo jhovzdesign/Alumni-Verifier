@@ -51,7 +51,8 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
   const [phone, setPhone] = useState('');
 
   // Section 2: Academic Info
-  // Bachelor's (Required)
+  // Bachelor's (Optional)
+  const [hasBachelor, setHasBachelor] = useState(true);
   const [bachelorProgram, setBachelorProgram] = useState('');
   const [bachelorCollege, setBachelorCollege] = useState('');
   const [bachelorMajor, setBachelorMajor] = useState('');
@@ -219,10 +220,33 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
       setFormError('First Name and Last Name are required.');
       return;
     }
-    if (!bachelorProgram.trim() || !bachelorCollege.trim()) {
-      setFormError("Bachelor's degree program and college are required.");
+
+    // Degree validation
+    if (hasBachelor && (!bachelorProgram.trim() || !bachelorCollege.trim())) {
+      setFormError("Please fill out the Bachelor's degree program and college, or uncheck Bachelor's degree.");
       return;
     }
+
+    if (hasMaster && (!masterProgram.trim() || !masterCollege.trim())) {
+      setFormError("Please fill out the Master's degree program and college, or uncheck Master's degree.");
+      return;
+    }
+
+    if (hasDoctorate && (!docProgram.trim() || !docCollege.trim())) {
+      setFormError("Please fill out the Doctorate degree program and college, or uncheck Doctorate degree.");
+      return;
+    }
+
+    const hasAnyDegree =
+      (hasBachelor && Boolean(bachelorProgram.trim())) ||
+      (hasMaster && Boolean(masterProgram.trim())) ||
+      (hasDoctorate && Boolean(docProgram.trim()));
+
+    if (!hasAnyDegree) {
+      setFormError("At least one university degree program earned at Panpacific University (Bachelor's, Master's, or Doctorate) is required.");
+      return;
+    }
+
     if (!cardNumber.trim()) {
       setFormError('Card Number is required.');
       return;
@@ -240,16 +264,18 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
 
     try {
       // Build academic records array
-      const academic_records: any[] = [
-        {
+      const academic_records: any[] = [];
+
+      if (hasBachelor && bachelorProgram.trim()) {
+        academic_records.push({
           degree_level: 'BACHELORS',
           degree_program: bachelorProgram.trim(),
           college: bachelorCollege.trim(),
           major: bachelorMajor.trim() || bachelorProgram.trim(),
           graduation_year: bachelorYear,
           campus: bachelorCampus.trim()
-        }
-      ];
+        });
+      }
 
       if (hasMaster && masterProgram.trim()) {
         academic_records.push({
@@ -304,13 +330,18 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
 
       const fullName = [firstName.trim(), middleName.trim(), lastName.trim(), suffix.trim()].filter(Boolean).join(' ');
 
+      const primaryRecord = academic_records[0] || {
+        degree_program: 'Graduate Studies',
+        campus: 'Panpacific University'
+      };
+
       setSuccessResult({
         alumniId: createdId,
         fullName,
         cardNumber: cardNumber.trim(),
         qrValue: qrValue.trim(),
-        campus: bachelorCampus.trim(),
-        degreeProgram: bachelorProgram.trim()
+        campus: primaryRecord.campus,
+        degreeProgram: primaryRecord.degree_program
       });
     } catch (err: any) {
       setFormError(err.message || 'Failed to save alumni record.');
@@ -330,6 +361,7 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
     setPhotoUrl('');
     setEmail('');
     setPhone('');
+    setHasBachelor(true);
     setBachelorProgram('');
     setBachelorCollege('');
     setBachelorMajor('');
@@ -667,84 +699,104 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
             </h2>
           </div>
 
-          {/* Bachelor's Degree Section (Required) */}
+          <div className="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl text-xs text-amber-900 flex items-start gap-2">
+            <span className="font-bold shrink-0">Note:</span>
+            <span>
+              Bachelor&apos;s degree is optional for graduates who only took Master&apos;s or Doctorate programs at Panpacific University. Include whichever degree levels were earned at the university.
+            </span>
+          </div>
+
+          {/* Bachelor's Degree Section (Optional with Checkbox) */}
           <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-800">
-                Bachelor&apos;s Degree (Required)
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="has-bachelor-checkbox"
+                  checked={hasBachelor}
+                  onChange={(e) => setHasBachelor(e.target.checked)}
+                  className="w-4 h-4 text-slate-900 rounded border-slate-300 focus:ring-slate-900 cursor-pointer"
+                />
+                <label htmlFor="has-bachelor-checkbox" className="text-xs font-bold text-slate-900 cursor-pointer">
+                  Include Bachelor&apos;s Degree (Undergraduate)
+                </label>
+              </div>
+              <span className="text-[10px] text-slate-500 font-medium">
+                {hasBachelor ? 'Included in Registry' : 'Optional / Graduated Elsewhere'}
               </span>
-              <span className="text-[10px] text-slate-600">Base Undergraduate Qualification</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2 space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Bachelor&apos;s Degree Program <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={bachelorProgram}
-                  onChange={(e) => setBachelorProgram(e.target.value)}
-                  placeholder="e.g. Bachelor of Science in Information Technology"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
-                />
-              </div>
+            {hasBachelor && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200/60 animate-in fade-in duration-150">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Bachelor&apos;s Degree Program <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required={hasBachelor}
+                    value={bachelorProgram}
+                    onChange={(e) => setBachelorProgram(e.target.value)}
+                    placeholder="e.g. Bachelor of Science in Information Technology"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  College <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={bachelorCollege}
-                  onChange={(e) => setBachelorCollege(e.target.value)}
-                  placeholder="e.g. College of Computing and Information Technology"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
-                />
-              </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    College <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required={hasBachelor}
+                    value={bachelorCollege}
+                    onChange={(e) => setBachelorCollege(e.target.value)}
+                    placeholder="e.g. College of Computing and Information Technology"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Major / Specialization
-                </label>
-                <input
-                  type="text"
-                  value={bachelorMajor}
-                  onChange={(e) => setBachelorMajor(e.target.value)}
-                  placeholder="e.g. Information Technology"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
-                />
-              </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Major / Specialization
+                  </label>
+                  <input
+                    type="text"
+                    value={bachelorMajor}
+                    onChange={(e) => setBachelorMajor(e.target.value)}
+                    placeholder="e.g. Information Technology"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Graduation Year <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={bachelorYear}
-                  onChange={(e) => setBachelorYear(parseInt(e.target.value, 10))}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none font-mono"
-                />
-              </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Graduation Year <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    required={hasBachelor}
+                    value={bachelorYear}
+                    onChange={(e) => setBachelorYear(parseInt(e.target.value, 10))}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none font-mono"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Campus <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={bachelorCampus}
-                  onChange={(e) => setBachelorCampus(e.target.value)}
-                  placeholder="e.g. Urdaneta Campus"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
-                />
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Campus <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required={hasBachelor}
+                    value={bachelorCampus}
+                    onChange={(e) => setBachelorCampus(e.target.value)}
+                    placeholder="e.g. Urdaneta Campus"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Master's Degree Section (Optional with Checkbox) */}

@@ -61,11 +61,13 @@ export const AdminAlumniList: React.FC<AdminAlumniListProps> = ({
         page,
         limit: 10
       });
-      setItems(res.items || []);
-      setTotalPages(res.totalPages || 1);
-      setTotalCount(res.total || 0);
+      const list = res?.items || res?.data || (Array.isArray(res) ? res : []);
+      setItems(list);
+      setTotalPages(res?.totalPages || res?.pagination?.totalPages || 1);
+      setTotalCount(res?.total ?? res?.pagination?.total ?? list.length);
     } catch (err) {
       console.error('Failed to load alumni directory:', err);
+      setItems([]);
     } finally {
       setLoading(false);
     }

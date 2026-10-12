@@ -39,8 +39,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         api.getActivityLogs({ page: 1, limit: 6 })
       ]);
       setStats(statsData);
-      setRecentLogs(logsData.items || []);
-      setRecentActivities(activitiesData.items || []);
+      setRecentLogs(logsData?.items || logsData?.data || (Array.isArray(logsData) ? logsData : []));
+      setRecentActivities(activitiesData?.items || activitiesData?.data || (Array.isArray(activitiesData) ? activitiesData : []));
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -67,62 +67,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     );
   }
 
-  const statCards = [
+  const statCards: {
+    title: string;
+    value: number;
+    desc: string;
+    icon: React.ComponentType<any>;
+    color: string;
+    tabTarget: AdminTab;
+  }[] = [
     {
       title: 'Total Alumni',
       value: stats?.total_alumni ?? 0,
       desc: 'Registered graduates',
       icon: Users,
-      color: 'bg-blue-50 text-blue-800 border-blue-200'
+      color: 'bg-blue-50 text-blue-800 border-blue-200',
+      tabTarget: 'alumni-list'
     },
     {
       title: 'Active Cards',
       value: stats?.active_cards ?? 0,
       desc: 'Currently verified cards',
       icon: CreditCard,
-      color: 'bg-emerald-50 text-emerald-800 border-emerald-200'
+      color: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      tabTarget: 'cards'
     },
     {
       title: 'Expired Cards',
       value: stats?.expired_cards ?? 0,
       desc: 'Past expiration date',
       icon: AlertTriangle,
-      color: 'bg-amber-50 text-amber-800 border-amber-200'
+      color: 'bg-amber-50 text-amber-800 border-amber-200',
+      tabTarget: 'cards'
     },
     {
       title: 'Revoked Cards',
       value: stats?.revoked_cards ?? 0,
       desc: 'Manually invalidated',
       icon: ShieldAlert,
-      color: 'bg-red-50 text-red-800 border-red-200'
+      color: 'bg-red-50 text-red-800 border-red-200',
+      tabTarget: 'cards'
     },
     {
       title: 'Registered QR Codes',
       value: stats?.registered_qr_codes ?? 0,
       desc: 'Issued card tokens',
       icon: QrCode,
-      color: 'bg-indigo-50 text-indigo-800 border-indigo-200'
+      color: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+      tabTarget: 'qr-codes'
     },
     {
       title: 'Total Verifications',
       value: stats?.total_verifications ?? 0,
       desc: 'Lifetime query events',
       icon: FileCheck,
-      color: 'bg-slate-50 text-slate-800 border-slate-200'
+      color: 'bg-slate-50 text-slate-800 border-slate-200',
+      tabTarget: 'verification-logs'
     },
     {
       title: "Today's Verifications",
       value: stats?.today_verifications ?? 0,
       desc: 'Scans recorded today',
       icon: Calendar,
-      color: 'bg-teal-50 text-teal-800 border-teal-200'
+      color: 'bg-teal-50 text-teal-800 border-teal-200',
+      tabTarget: 'verification-logs'
     },
     {
       title: 'Not Found Attempts',
       value: stats?.not_found_attempts ?? 0,
       desc: 'Unregistered QR scans',
       icon: XCircle,
-      color: 'bg-rose-50 text-rose-800 border-rose-200'
+      color: 'bg-rose-50 text-rose-800 border-rose-200',
+      tabTarget: 'verification-logs'
     }
   ];
 
@@ -166,13 +181,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           return (
             <div
               key={idx}
-              className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-2"
+              onClick={() => onNavigate(item.tabTarget)}
+              className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs space-y-2 hover:border-slate-400 hover:shadow-sm cursor-pointer transition-all group"
+              title={`View ${item.title}`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-600 truncate">
+                <span className="text-xs font-semibold text-slate-600 truncate group-hover:text-slate-900 transition-colors">
                   {item.title}
                 </span>
-                <div className={`p-2 rounded-lg border ${item.color}`}>
+                <div className={`p-2 rounded-lg border ${item.color} group-hover:scale-105 transition-transform`}>
                   <Icon className="w-4 h-4" />
                 </div>
               </div>
@@ -180,8 +197,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <div className="text-2xl font-bold font-mono text-slate-900">
                   {item.value.toLocaleString()}
                 </div>
-                <div className="text-[11px] text-slate-600">
-                  {item.desc}
+                <div className="text-[11px] text-slate-600 flex items-center justify-between">
+                  <span>{item.desc}</span>
+                  <ArrowRight className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
             </div>

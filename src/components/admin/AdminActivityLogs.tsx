@@ -22,11 +22,13 @@ export const AdminActivityLogs: React.FC = () => {
         page,
         limit: 20
       });
-      setLogs(data.items || []);
-      setTotalPages(data.totalPages || 1);
-      setTotalCount(data.total || 0);
+      const items = data?.items || data?.data || (Array.isArray(data) ? data : []);
+      setLogs(items);
+      setTotalPages(data?.totalPages || data?.pagination?.totalPages || 1);
+      setTotalCount(data?.total ?? data?.pagination?.total ?? items.length);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load activity logs:', err);
+      setLogs([]);
     } finally {
       setLoading(false);
     }

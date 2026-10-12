@@ -53,16 +53,20 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand */}
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => onTabChange('dashboard')}
+            className="flex items-center gap-2 text-left cursor-pointer group"
+            title="Go to Dashboard"
+          >
             <div className="space-y-0.5">
-              <span className="font-serif text-sm sm:text-base font-bold tracking-wider uppercase block text-emerald-400">
+              <span className="font-serif text-sm sm:text-base font-bold tracking-wider uppercase block text-emerald-400 group-hover:text-emerald-300 transition-colors">
                 Panpacific University
               </span>
               <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-medium">
                 Alumni Registry Administration
               </span>
             </div>
-          </div>
+          </button>
 
           {/* User profile & Actions */}
           <div className="flex items-center gap-3">

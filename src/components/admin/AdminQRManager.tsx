@@ -16,10 +16,12 @@ export const AdminQRManager: React.FC<AdminQRManagerProps> = ({ onSelectAlumnus 
   const fetchQRs = async () => {
     setLoading(true);
     try {
-      const data = await api.getAllQRCodes();
-      setQrs(data);
+      const res = await api.getAllQRCodes();
+      const list = Array.isArray(res) ? res : (res?.data || res?.qr_codes || []);
+      setQrs(list);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load QR codes:', err);
+      setQrs([]);
     } finally {
       setLoading(false);
     }
@@ -48,12 +50,14 @@ export const AdminQRManager: React.FC<AdminQRManagerProps> = ({ onSelectAlumnus 
     }
   };
 
-  const filtered = qrs.filter((q) => {
+  const filtered = (qrs || []).filter((qr) => {
+    if (!qr) return false;
     const s = search.toLowerCase();
     return (
-      q.qr_value.toLowerCase().includes(s) ||
-      q.card_number.toLowerCase().includes(s) ||
-      q.alumni_name.toLowerCase().includes(s)
+      (qr.qr_value || '').toLowerCase().includes(s) ||
+      (qr.card_number || '').toLowerCase().includes(s) ||
+      (qr.alumni_name || '').toLowerCase().includes(s) ||
+      (qr.alumni_id || '').toLowerCase().includes(s)
     );
   });
 
@@ -145,10 +149,10 @@ export const AdminQRManager: React.FC<AdminQRManagerProps> = ({ onSelectAlumnus 
                     <td className="py-3 px-4 text-slate-600 text-[11px]">
                       {new Date(qr.uploaded_at).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap space-x-1">
+                    <td className="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
                       <button
                         onClick={() => handleOpenPreview(qr.qr_value)}
-                        className="px-2 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 rounded cursor-pointer"
+                        className="px-2 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 rounded cursor-pointer transition-colors"
                         title="View printable QR Code"
                       >
                         View QR
@@ -158,7 +162,7 @@ export const AdminQRManager: React.FC<AdminQRManagerProps> = ({ onSelectAlumnus 
                         href={`/verify/${encodeURIComponent(qr.qr_value)}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 rounded"
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 rounded transition-colors"
                         title="Open live public verification URL"
                       >
                         <ExternalLink className="w-3 h-3 text-slate-600" />
@@ -167,14 +171,24 @@ export const AdminQRManager: React.FC<AdminQRManagerProps> = ({ onSelectAlumnus 
 
                       <button
                         onClick={() => handleToggle(qr)}
-                        className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer ${
+                        className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer transition-colors ${
                           qr.status === 'ACTIVE'
-                            ? 'text-red-700 hover:bg-red-50'
-                            : 'text-emerald-700 hover:bg-emerald-50'
+                            ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200'
+                            : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
                         }`}
                       >
                         {qr.status === 'ACTIVE' ? 'Disable' : 'Enable'}
                       </button>
+
+                      {qr.alumni_id && qr.alumni_id !== 'N/A' && (
+                        <button
+                          onClick={() => onSelectAlumnus(qr.alumni_id)}
+                          className="px-2 py-1 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded cursor-pointer transition-colors"
+                          title="View Alumni Profile"
+                        >
+                          Profile
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
