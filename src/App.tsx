@@ -22,6 +22,7 @@ export function App() {
   // Admin SPA state
   const [adminTab, setAdminTab] = useState<AdminTab>('dashboard');
   const [selectedAlumniId, setSelectedAlumniId] = useState<string | null>(null);
+  const [justAddedAlumniId, setJustAddedAlumniId] = useState<string | null>(null);
 
   // Handle SPA 404 redirects from static hosts (e.g. GitHub Pages or Vercel static fallback)
   useEffect(() => {
@@ -185,6 +186,7 @@ export function App() {
         {adminTab === 'alumni-add' && (
           <AdminAddAlumni
             onSuccess={(newAlumniId) => {
+              setJustAddedAlumniId(newAlumniId);
               setSelectedAlumniId(newAlumniId);
               setAdminTab('alumni-detail');
             }}
@@ -195,7 +197,9 @@ export function App() {
         {adminTab === 'alumni-detail' && selectedAlumniId && (
           <AdminAlumniDetail
             alumniId={selectedAlumniId}
+            justAdded={justAddedAlumniId === selectedAlumniId}
             onBack={() => {
+              setJustAddedAlumniId(null);
               setSelectedAlumniId(null);
               setAdminTab('alumni-list');
             }}

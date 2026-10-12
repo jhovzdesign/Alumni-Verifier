@@ -15,7 +15,9 @@ import {
   RefreshCw,
   Plus,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Database,
+  ShieldCheck
 } from 'lucide-react';
 
 interface AdminAddAlumniProps {
@@ -26,6 +28,16 @@ interface AdminAddAlumniProps {
 export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCancel }) => {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Success Confirmation State
+  const [successResult, setSuccessResult] = useState<{
+    alumniId: string;
+    fullName: string;
+    cardNumber: string;
+    qrValue: string;
+    campus: string;
+    degreeProgram: string;
+  } | null>(null);
 
   // Section 1: Personal Info
   const [alumniId, setAlumniId] = useState('');
@@ -290,13 +302,151 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
         res?.id ||
         alumniId.trim();
 
-      onSuccess(createdId);
+      const fullName = [firstName.trim(), middleName.trim(), lastName.trim(), suffix.trim()].filter(Boolean).join(' ');
+
+      setSuccessResult({
+        alumniId: createdId,
+        fullName,
+        cardNumber: cardNumber.trim(),
+        qrValue: qrValue.trim(),
+        campus: bachelorCampus.trim(),
+        degreeProgram: bachelorProgram.trim()
+      });
     } catch (err: any) {
       setFormError(err.message || 'Failed to save alumni record.');
     } finally {
       setSubmitting(false);
     }
   };
+
+  const handleRegisterAnother = () => {
+    setSuccessResult(null);
+    setAlumniId('');
+    setAlumniIdError(null);
+    setFirstName('');
+    setMiddleName('');
+    setLastName('');
+    setSuffix('');
+    setPhotoUrl('');
+    setEmail('');
+    setPhone('');
+    setBachelorProgram('');
+    setBachelorCollege('');
+    setBachelorMajor('');
+    setBachelorYear(2024);
+    setBachelorCampus('Urdaneta Campus');
+    setHasMaster(false);
+    setMasterProgram('');
+    setMasterCollege('College of Graduate Studies');
+    setMasterMajor('');
+    setHasDoctorate(false);
+    setDocProgram('');
+    setDocCollege('College of Graduate Studies');
+    setDocMajor('');
+    setCardNumber('');
+    setCardNumberError(null);
+    setIssueDate(new Date().toISOString().slice(0, 10));
+    setExpirationDate(new Date(Date.now() + 5 * 365 * 24 * 3600 * 1000).toISOString().slice(0, 10));
+    setCardStatus('ACTIVE');
+    setQrValue('');
+    setQrImageUrl('');
+    setQrStatus('ACTIVE');
+    setFormError(null);
+  };
+
+  if (successResult) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="bg-white p-8 sm:p-10 rounded-2xl border border-emerald-200 shadow-sm text-center space-y-6">
+          <div className="relative inline-block">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-xs border-2 border-emerald-200">
+              <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-emerald-600 text-white rounded-full p-1.5 shadow-xs">
+              <Database className="w-4 h-4" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold tracking-wide">
+              <Database className="w-3.5 h-3.5 text-emerald-600" />
+              <span>DATABASE CONFIRMED</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-slate-900 tracking-tight">
+              Alumni Successfully Added on the Database
+            </h1>
+            <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+              The official alumni record for <strong className="text-slate-800">{successResult.fullName}</strong> has been saved to the Panpacific University database and is active for live verification.
+            </p>
+          </div>
+
+          {/* Record Summary Box */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-left divide-y divide-slate-200 text-xs">
+            <div className="pb-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Alumni ID</span>
+              <span className="font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+                {successResult.alumniId}
+              </span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Full Name</span>
+              <span className="font-bold text-slate-900 text-right">{successResult.fullName}</span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Degree Program</span>
+              <span className="font-medium text-slate-800 text-right max-w-[280px] truncate">{successResult.degreeProgram}</span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Campus</span>
+              <span className="text-slate-700 text-right">{successResult.campus}</span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Card Number</span>
+              <span className="font-mono font-semibold text-slate-700">{successResult.cardNumber}</span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">QR Verification Token</span>
+              <span className="font-mono text-[11px] font-semibold text-slate-600">{successResult.qrValue}</span>
+            </div>
+            <div className="pt-3 flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Database Status</span>
+              <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                Live in Registry &amp; Verified
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => onSuccess(successResult.alumniId)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold tracking-wide transition-colors shadow-xs cursor-pointer"
+            >
+              <span>View Registered Profile &amp; ID Card</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleRegisterAnother}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-slate-500" />
+              <span>Register Another Alumnus</span>
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="inline-flex items-center justify-center px-4 py-2.5 text-slate-500 hover:text-slate-700 text-xs font-medium cursor-pointer transition-colors"
+            >
+              Return to Directory
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

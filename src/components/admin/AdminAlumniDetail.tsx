@@ -22,17 +22,20 @@ import {
   Clock,
   Calendar,
   Sparkles,
-  Upload
+  Upload,
+  Database
 } from 'lucide-react';
 
 interface AdminAlumniDetailProps {
   alumniId: string;
+  justAdded?: boolean;
   onBack: () => void;
   onRefreshList?: () => void;
 }
 
 export const AdminAlumniDetail: React.FC<AdminAlumniDetailProps> = ({
   alumniId,
+  justAdded = false,
   onBack,
   onRefreshList
 }) => {
@@ -173,6 +176,29 @@ export const AdminAlumniDetail: React.FC<AdminAlumniDetailProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Newly Registered Confirmation Banner */}
+      {justAdded && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 text-emerald-900 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center shrink-0 border border-emerald-200">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-emerald-950 flex items-center gap-2">
+                <span>Alumni Successfully Added on the Database</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md border border-emerald-200">
+                  <Database className="w-3 h-3" />
+                  CONFIRMED
+                </span>
+              </h4>
+              <p className="text-[11px] sm:text-xs text-emerald-800 mt-0.5">
+                Official alumni profile for <strong>{fullName}</strong> ({alumniId}) has been committed to the university database and is live for QR verification.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div className="flex items-center gap-3">
