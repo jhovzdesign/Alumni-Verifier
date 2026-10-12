@@ -920,15 +920,17 @@ class Database {
   }
 
   public getAlumnusDetail(alumni_id: string) {
-    const alumnus = this.data.alumni.find(a => a.alumni_id === alumni_id && !a.archived);
+    const alumnus = this.data.alumni.find(a =>
+      (a.alumni_id === alumni_id || a.id === alumni_id || a.alumni_id.toUpperCase() === alumni_id.toUpperCase()) && !a.archived
+    );
     if (!alumnus) return null;
 
-    const academic_records = this.data.academic_records.filter(ar => ar.alumni_id === alumni_id);
-    const cards = this.data.cards.filter(c => c.alumni_id === alumni_id);
+    const academic_records = this.data.academic_records.filter(ar => ar.alumni_id === alumnus.alumni_id);
+    const cards = this.data.cards.filter(c => c.alumni_id === alumnus.alumni_id);
     const cardIds = cards.map(c => c.id);
     const qr_codes = this.data.qr_codes.filter(q => cardIds.includes(q.card_id));
-    const verification_logs = this.data.verification_logs.filter(vl => vl.alumni_id === alumni_id);
-    const activity_logs = this.data.activity_logs.filter(al => al.target_id === alumni_id || cardIds.includes(al.target_id));
+    const verification_logs = this.data.verification_logs.filter(vl => vl.alumni_id === alumnus.alumni_id);
+    const activity_logs = this.data.activity_logs.filter(al => al.target_id === alumnus.alumni_id || cardIds.includes(al.target_id));
 
     return {
       alumnus,

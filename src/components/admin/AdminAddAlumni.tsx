@@ -343,6 +343,12 @@ export const AdminAddAlumni: React.FC<AdminAddAlumniProps> = ({ onSuccess, onCan
         campus: primaryRecord.campus,
         degreeProgram: primaryRecord.degree_program
       });
+
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch {
+        // ignore
+      }
     } catch (err: any) {
       setFormError(err.message || 'Failed to save alumni record.');
     } finally {

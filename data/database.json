@@ -267,6 +267,18 @@
   ],
   "verification_logs": [
     {
+      "id": "vlog-1791767099552",
+      "qr_id": null,
+      "card_id": null,
+      "alumni_id": null,
+      "verification_reference": "VER-2026-VPBR5H",
+      "result": "NOT_FOUND",
+      "verified_at": "2026-10-12T01:04:59.552Z",
+      "ip_address": "27.110.174.34, 169.254.169.126",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "searched_token": "PU-2024-00001-0D1SQ6"
+    },
+    {
       "id": "vlog-1790828117318",
       "qr_id": "qr-1790828110640",
       "card_id": "card-1790828110640",
@@ -424,6 +436,60 @@
     }
   ],
   "activity_logs": [
+    {
+      "id": "act-1791768434341-283",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN CREATED ALUMNI",
+      "target_type": "ALUMNI",
+      "target_id": "PU-2026-MBA888",
+      "metadata": {
+        "name": "Maria Reyes",
+        "card_number": "AC-2026-MBA888",
+        "qr_value": "PU-ALUMNI-2026-MBA888"
+      },
+      "created_at": "2026-10-12T01:27:14.341Z"
+    },
+    {
+      "id": "act-1791768434332-162",
+      "admin_id": "admin@panpacificu.edu.ph",
+      "action": "ADMIN LOGGED IN",
+      "target_type": "AUTH",
+      "target_id": "admin@panpacificu.edu.ph",
+      "metadata": {
+        "ip": "127.0.0.1"
+      },
+      "created_at": "2026-10-12T01:27:14.332Z"
+    },
+    {
+      "id": "act-1791767300541-790",
+      "admin_id": "admin@university.edu.ph",
+      "action": "ADMIN LOGGED OUT",
+      "target_type": "AUTH",
+      "target_id": "admin@university.edu.ph",
+      "created_at": "2026-10-12T01:08:20.541Z"
+    },
+    {
+      "id": "act-1791767293797-607",
+      "admin_id": "admin@panpacificu.edu.ph",
+      "action": "ADMIN LOGGED IN",
+      "target_type": "AUTH",
+      "target_id": "admin@panpacificu.edu.ph",
+      "metadata": {
+        "ip": "127.0.0.1"
+      },
+      "created_at": "2026-10-12T01:08:13.797Z"
+    },
+    {
+      "id": "act-1791766315141-176",
+      "admin_id": "admin@panpacificu.edu.ph",
+      "action": "ADMIN LOGGED IN",
+      "target_type": "AUTH",
+      "target_id": "admin@panpacificu.edu.ph",
+      "metadata": {
+        "ip": "127.0.0.1"
+      },
+      "created_at": "2026-10-12T00:51:55.141Z"
+    },
     {
       "id": "act-1790828110640-806",
       "admin_id": "admin@university.edu.ph",

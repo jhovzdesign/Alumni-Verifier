@@ -162,7 +162,7 @@ export const AdminAlumniDetail: React.FC<AdminAlumniDetailProps> = ({
     }
   };
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-3">
         <Loader2 className="w-8 h-8 text-slate-800 animate-spin" />
@@ -171,8 +171,35 @@ export const AdminAlumniDetail: React.FC<AdminAlumniDetailProps> = ({
     );
   }
 
-  const { alumnus, academic_records, cards, qr_codes, verification_logs, activity_logs } = data;
-  const fullName = `${alumnus.first_name} ${alumnus.middle_name ? alumnus.middle_name + ' ' : ''}${alumnus.last_name}${alumnus.suffix ? ' ' + alumnus.suffix : ''}`;
+  const alumnus: Alumni | null = data
+    ? (data.alumnus || ((data as any).alumni_id ? ((data as any) as Alumni) : null))
+    : null;
+
+  if (!alumnus) {
+    return (
+      <div className="bg-white p-8 sm:p-12 rounded-2xl border border-slate-200 shadow-xs text-center space-y-4 max-w-lg mx-auto my-8">
+        <h3 className="text-base font-bold text-slate-900">Alumni Record Not Found</h3>
+        <p className="text-xs text-slate-600">
+          The requested alumni record for ID <strong className="font-mono text-slate-900">{alumniId}</strong> could not be located in the active registry.
+        </p>
+        <button
+          type="button"
+          onClick={onBack}
+          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors"
+        >
+          Return to Alumni Directory
+        </button>
+      </div>
+    );
+  }
+
+  const academic_records: AcademicRecord[] = data?.academic_records || [];
+  const cards: AlumniCard[] = data?.cards || ((data as any)?.active_card ? [(data as any).active_card] : []);
+  const qr_codes: AlumniQRCode[] = data?.qr_codes || ((data as any)?.active_qr ? [(data as any).active_qr] : []);
+  const verification_logs: VerificationLog[] = data?.verification_logs || (data as any)?.verification_history || [];
+  const activity_logs: ActivityLog[] = data?.activity_logs || [];
+
+  const fullName = `${alumnus.first_name || ''} ${alumnus.middle_name ? alumnus.middle_name + ' ' : ''}${alumnus.last_name || ''}${alumnus.suffix ? ' ' + alumnus.suffix : ''}`.trim() || alumniId;
 
   return (
     <div className="space-y-6">

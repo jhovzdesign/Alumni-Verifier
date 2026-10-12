@@ -250,20 +250,33 @@ class ClientDatabaseStore {
 
   public getAlumniById(id: string) {
     const db = this.getDb();
-    const alumnus = db.alumni.find(a => a.id === id || a.alumni_id === id);
+    const alumnus = db.alumni.find(a =>
+      a.id === id ||
+      a.alumni_id === id ||
+      a.alumni_id.toUpperCase() === id.toUpperCase()
+    );
     if (!alumnus) return null;
 
-    const academic = db.academic_records.filter(ar => ar.alumni_id === alumnus.alumni_id);
-    const card = db.cards.find(c => c.alumni_id === alumnus.alumni_id);
-    const qr = card ? db.qr_codes.find(q => q.card_id === card.id) : undefined;
-    const verifications = db.verification_logs.filter(v => v.alumni_id === alumnus.alumni_id);
+    const academic_records = db.academic_records.filter(ar => ar.alumni_id === alumnus.alumni_id);
+    const cards = db.cards.filter(c => c.alumni_id === alumnus.alumni_id);
+    const cardIds = cards.map(c => c.id);
+    const qr_codes = db.qr_codes.filter(q => cardIds.includes(q.card_id));
+    const verification_logs = db.verification_logs.filter(v => v.alumni_id === alumnus.alumni_id);
+    const activity_logs = (db.activity_logs || []).filter(al => al.target_id === alumnus.alumni_id || cardIds.includes(al.target_id));
+    const active_card = cards.find(c => c.status === 'ACTIVE') || cards[0];
+    const active_qr = active_card ? qr_codes.find(q => q.card_id === active_card.id) : qr_codes[0];
 
     return {
+      alumnus,
+      academic_records,
+      cards,
+      qr_codes,
+      verification_logs,
+      activity_logs,
       ...alumnus,
-      academic_records: academic,
-      active_card: card,
-      active_qr: qr,
-      verification_history: verifications
+      active_card,
+      active_qr,
+      verification_history: verification_logs
     };
   }
 
