@@ -56,10 +56,13 @@ export function App() {
     };
   }, []);
 
-  // Check admin session on load
+  // Check admin session and synchronize database with server on load
   useEffect(() => {
-    const checkSession = async () => {
+    const initApp = async () => {
       try {
+        // Sync central database across all browsers
+        api.syncWithServer().catch(() => {});
+
         const session = await api.checkAdminSession();
         if (session.authenticated) {
           setAdminUser(session.user);
@@ -72,7 +75,7 @@ export function App() {
         setCheckingSession(false);
       }
     };
-    checkSession();
+    initApp();
   }, []);
 
   const navigateTo = (path: string) => {

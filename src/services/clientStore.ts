@@ -43,10 +43,70 @@ class ClientDatabaseStore {
     const now = new Date();
     const refCode = 'VER-' + new Date().getFullYear() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    // Find QR record
-    const qrRecord = db.qr_codes.find(q => q.qr_value.toUpperCase() === token.toUpperCase());
+    const searchVal = token.toUpperCase().trim();
+    const cleanSearchAlpha = searchVal.replace(/[^A-Z0-9]/g, '');
+    const cleanSearchNoPrefix = searchVal.replace(/^(PU|AC)-?/, '');
 
-    if (!qrRecord) {
+    // 1. Find QR record
+    let qrRecord = db.qr_codes.find(
+      q => q.qr_value.toUpperCase() === searchVal ||
+           q.qr_value.toUpperCase().replace(/[^A-Z0-9]/g, '') === cleanSearchAlpha
+    );
+
+    let card: AlumniCard | undefined;
+    let alumnus: Alumni | undefined;
+
+    if (qrRecord) {
+      const qrCardId = qrRecord.card_id;
+      card = db.cards.find(c => c.id === qrCardId);
+      if (card) {
+        const cardAlumniId = card.alumni_id;
+        alumnus = db.alumni.find(a => a.alumni_id === cardAlumniId && !a.archived);
+      }
+    } else {
+      // 2. Check if search token is an Alumni ID (e.g. PU-2024-00123)
+      alumnus = db.alumni.find(a => {
+        if (a.archived) return false;
+        const aid = a.alumni_id.toUpperCase();
+        const aidAlpha = aid.replace(/[^A-Z0-9]/g, '');
+        const aidNoPrefix = aid.replace(/^PU-?/, '');
+        return (
+          aid === searchVal ||
+          aidAlpha === cleanSearchAlpha ||
+          aidNoPrefix === cleanSearchNoPrefix
+        );
+      });
+
+      if (alumnus) {
+        const alumnusId = alumnus.alumni_id;
+        card = db.cards.find(c => c.alumni_id === alumnusId && c.status === 'ACTIVE') ||
+               db.cards.find(c => c.alumni_id === alumnusId);
+        if (card) {
+          const cardId = card.id;
+          qrRecord = db.qr_codes.find(q => q.card_id === cardId);
+        }
+      } else {
+        // 3. Check if search token is a Card Number (e.g. AC-2024-00123)
+        card = db.cards.find(c => {
+          const cNum = c.card_number.toUpperCase();
+          const cNumAlpha = cNum.replace(/[^A-Z0-9]/g, '');
+          const cNumNoPrefix = cNum.replace(/^AC-?/, '');
+          return (
+            cNum === searchVal ||
+            cNumAlpha === cleanSearchAlpha ||
+            cNumNoPrefix === cleanSearchNoPrefix
+          );
+        });
+        if (card) {
+          const cardAlumniId = card.alumni_id;
+          const cardId = card.id;
+          alumnus = db.alumni.find(a => a.alumni_id === cardAlumniId && !a.archived);
+          qrRecord = db.qr_codes.find(q => q.card_id === cardId);
+        }
+      }
+    }
+
+    if (!alumnus && !card && !qrRecord) {
       const notFoundLog: VerificationLog = {
         id: 'vlog-' + Date.now(),
         qr_id: null,
@@ -66,27 +126,45 @@ class ClientDatabaseStore {
         result: 'NOT_FOUND',
         verification_reference: refCode,
         verified_at: now.toISOString(),
-        message: 'No official Panpacific University alumni record matches this QR token.'
+        message: `No alumni record, membership card, or QR token matching "${token}" was found in the official Panpacific University database.`
       };
     }
 
-    const card = db.cards.find(c => c.id === qrRecord.card_id);
-    if (!card) {
+    if (!card && alumnus) {
+      card = {
+        id: 'card-' + Date.now(),
+        alumni_id: alumnus.alumni_id,
+        card_number: 'AC-' + alumnus.alumni_id.replace(/^PU-/, ''),
+        issue_date: alumnus.created_at.slice(0, 10),
+        expiration_date: '2031-12-31',
+        status: 'ACTIVE',
+        created_at: alumnus.created_at,
+        updated_at: alumnus.updated_at
+      };
+    }
+
+    if (!alumnus && card) {
+      const cardAlumniId = card.alumni_id;
+      alumnus = db.alumni.find(a => a.alumni_id === cardAlumniId);
+    }
+
+    if (!alumnus || !card) {
       return {
         result: 'NOT_FOUND',
         verification_reference: refCode,
         verified_at: now.toISOString(),
-        message: 'Card record not found.'
+        message: 'Record incomplete or not found in registry.'
       };
     }
 
-    const alumnus = db.alumni.find(a => a.alumni_id === card.alumni_id);
-    if (!alumnus || alumnus.archived) {
-      return {
-        result: 'REVOKED',
-        verification_reference: refCode,
-        verified_at: now.toISOString(),
-        message: 'Alumni record is not active in the university registry.'
+    if (!qrRecord) {
+      qrRecord = {
+        id: 'qr-' + card.id,
+        card_id: card.id,
+        qr_value: 'PU-ALUMNI-' + alumnus.alumni_id,
+        status: 'ACTIVE',
+        uploaded_at: alumnus.created_at,
+        updated_at: alumnus.updated_at
       };
     }
 
@@ -566,6 +644,70 @@ class ClientDatabaseStore {
     db.activity_logs.unshift(log);
     this.saveDb(db);
     return log;
+  }
+
+  public getRawStore(): SeedDataSchema {
+    return this.getDb();
+  }
+
+  public syncFromServer(serverData: {
+    alumni?: Alumni[];
+    academic_records?: AcademicRecord[];
+    cards?: AlumniCard[];
+    qr_codes?: AlumniQRCode[];
+  }) {
+    const db = this.getDb();
+    let updated = false;
+
+    if (Array.isArray(serverData.alumni)) {
+      for (const a of serverData.alumni) {
+        if (!a || !a.alumni_id) continue;
+        const exists = db.alumni.some(ex => ex.alumni_id.toUpperCase() === a.alumni_id.toUpperCase());
+        if (!exists) {
+          db.alumni.unshift(a);
+          updated = true;
+        }
+      }
+    }
+
+    if (Array.isArray(serverData.academic_records)) {
+      for (const ar of serverData.academic_records) {
+        if (!ar || !ar.alumni_id) continue;
+        const exists = db.academic_records.some(
+          ex => ex.alumni_id === ar.alumni_id && ex.degree_program === ar.degree_program
+        );
+        if (!exists) {
+          db.academic_records.push(ar);
+          updated = true;
+        }
+      }
+    }
+
+    if (Array.isArray(serverData.cards)) {
+      for (const c of serverData.cards) {
+        if (!c || !c.card_number) continue;
+        const exists = db.cards.some(ex => ex.card_number.toUpperCase() === c.card_number.toUpperCase());
+        if (!exists) {
+          db.cards.unshift(c);
+          updated = true;
+        }
+      }
+    }
+
+    if (Array.isArray(serverData.qr_codes)) {
+      for (const q of serverData.qr_codes) {
+        if (!q || !q.qr_value) continue;
+        const exists = db.qr_codes.some(ex => ex.qr_value.toUpperCase() === q.qr_value.toUpperCase());
+        if (!exists) {
+          db.qr_codes.unshift(q);
+          updated = true;
+        }
+      }
+    }
+
+    if (updated) {
+      this.saveDb(db);
+    }
   }
 }
 

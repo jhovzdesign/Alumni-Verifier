@@ -456,13 +456,73 @@ class Database {
       };
     }
 
-    // Step 1: Query live database for QR code
-    // Check case-insensitive or exact match
-    const qr = this.data.qr_codes.find(
-      q => q.qr_value.toUpperCase() === token.toUpperCase()
+    // Step 1: Query live database for QR code, Alumni ID, or Card Number
+    const searchVal = token.toUpperCase().trim();
+    const cleanSearchAlpha = searchVal.replace(/[^A-Z0-9]/g, '');
+    const cleanSearchNoPrefix = searchVal.replace(/^(PU|AC)-?/, '');
+
+    let qr = this.data.qr_codes.find(
+      q => q.qr_value.toUpperCase() === searchVal ||
+           q.qr_value.toUpperCase().replace(/[^A-Z0-9]/g, '') === cleanSearchAlpha
     );
 
-    if (!qr) {
+    let card: AlumniCard | undefined;
+    let alumnus: Alumni | undefined;
+
+    if (qr) {
+      const qrCardId = qr.card_id;
+      card = this.data.cards.find(c => c.id === qrCardId);
+      if (card) {
+        const cardAlumniId = card.alumni_id;
+        alumnus = this.data.alumni.find(a => a.alumni_id === cardAlumniId && !a.archived);
+      }
+    } else {
+      // 1b. Check if search token is an Alumni ID (e.g. PU-2024-00123, 2024-00123, etc.)
+      alumnus = this.data.alumni.find(a => {
+        if (a.archived) return false;
+        const aid = a.alumni_id.toUpperCase();
+        const aidAlpha = aid.replace(/[^A-Z0-9]/g, '');
+        const aidNoPrefix = aid.replace(/^PU-?/, '');
+        const rawId = (a.id || '').toUpperCase();
+        return (
+          aid === searchVal ||
+          rawId === searchVal ||
+          aidAlpha === cleanSearchAlpha ||
+          aidNoPrefix === cleanSearchNoPrefix
+        );
+      });
+
+      if (alumnus) {
+        const alumnusId = alumnus.alumni_id;
+        // Find their active card or primary card
+        card = this.data.cards.find(c => c.alumni_id === alumnusId && c.status === 'ACTIVE') ||
+               this.data.cards.find(c => c.alumni_id === alumnusId);
+        if (card) {
+          const cardId = card.id;
+          qr = this.data.qr_codes.find(q => q.card_id === cardId);
+        }
+      } else {
+        // 1c. Check if search token is a Card Number (e.g. AC-2024-00123, 2024-00123)
+        card = this.data.cards.find(c => {
+          const cNum = c.card_number.toUpperCase();
+          const cNumAlpha = cNum.replace(/[^A-Z0-9]/g, '');
+          const cNumNoPrefix = cNum.replace(/^AC-?/, '');
+          return (
+            cNum === searchVal ||
+            cNumAlpha === cleanSearchAlpha ||
+            cNumNoPrefix === cleanSearchNoPrefix
+          );
+        });
+        if (card) {
+          const cardAlumniId = card.alumni_id;
+          const cardId = card.id;
+          alumnus = this.data.alumni.find(a => a.alumni_id === cardAlumniId && !a.archived);
+          qr = this.data.qr_codes.find(q => q.card_id === cardId);
+        }
+      }
+    }
+
+    if (!alumnus && !card && !qr) {
       // NOT FOUND
       const log: VerificationLog = {
         id: 'vlog-' + Date.now(),
@@ -483,17 +543,58 @@ class Database {
         result: 'NOT_FOUND',
         verification_reference,
         verified_at,
-        message: 'This QR code is not registered in the official Alumni Database of Panpacific University.'
+        message: `No alumni record, membership card, or QR token matching "${token}" was found in the official Panpacific University database.`
       };
     }
 
-    // Step 2: Check QR status
-    if (qr.status === 'DISABLED') {
+    // If alumnus was found, ensure card exists (or synthesize placeholder active card)
+    if (!card && alumnus) {
+      card = {
+        id: 'card-' + Date.now(),
+        alumni_id: alumnus.alumni_id,
+        card_number: 'AC-' + alumnus.alumni_id.replace(/^PU-/, ''),
+        issue_date: alumnus.created_at.slice(0, 10),
+        expiration_date: '2031-12-31',
+        status: 'ACTIVE',
+        created_at: alumnus.created_at,
+        updated_at: alumnus.updated_at
+      };
+    }
+
+    // If card was found but no alumnus
+    if (!alumnus && card) {
+      const cardAlumniId = card.alumni_id;
+      alumnus = this.data.alumni.find(a => a.alumni_id === cardAlumniId);
+    }
+
+    if (!alumnus || !card) {
+      return {
+        result: 'NOT_FOUND',
+        verification_reference,
+        verified_at,
+        message: 'Record incomplete or not found in registry.'
+      };
+    }
+
+    // Ensure qr exists for the verified card
+    if (!qr) {
+      qr = {
+        id: 'qr-' + card.id,
+        card_id: card.id,
+        qr_value: 'PU-ALUMNI-' + alumnus.alumni_id,
+        status: 'ACTIVE',
+        uploaded_at: alumnus.created_at,
+        updated_at: alumnus.updated_at
+      };
+    }
+
+    // Step 2: Check QR status if QR code was queried
+    if (qr && qr.status === 'DISABLED') {
       const log: VerificationLog = {
         id: 'vlog-' + Date.now(),
         qr_id: qr.id,
-        card_id: qr.card_id,
-        alumni_id: null,
+        card_id: card.id,
+        alumni_id: alumnus.alumni_id,
         verification_reference,
         result: 'DISABLED',
         verified_at,
@@ -509,61 +610,6 @@ class Database {
         verification_reference,
         verified_at,
         message: 'This QR code has been disabled by the university administration and is no longer valid.'
-      };
-    }
-
-    // Step 3: Find associated Card
-    const card = this.data.cards.find(c => c.id === qr.card_id);
-    if (!card) {
-      const log: VerificationLog = {
-        id: 'vlog-' + Date.now(),
-        qr_id: qr.id,
-        card_id: null,
-        alumni_id: null,
-        verification_reference,
-        result: 'NOT_FOUND',
-        verified_at,
-        ip_address: ip,
-        user_agent: userAgent,
-        searched_token: token
-      };
-      this.data.verification_logs.unshift(log);
-      this.persist();
-
-      return {
-        result: 'NOT_FOUND',
-        verification_reference,
-        verified_at,
-        message: 'No associated alumni card record found for this QR code.'
-      };
-    }
-
-    // Step 4: Find associated Alumnus
-    const alumnus = this.data.alumni.find(
-      a => a.alumni_id === card.alumni_id && !a.archived
-    );
-
-    if (!alumnus) {
-      const log: VerificationLog = {
-        id: 'vlog-' + Date.now(),
-        qr_id: qr.id,
-        card_id: card.id,
-        alumni_id: null,
-        verification_reference,
-        result: 'NOT_FOUND',
-        verified_at,
-        ip_address: ip,
-        user_agent: userAgent,
-        searched_token: token
-      };
-      this.data.verification_logs.unshift(log);
-      this.persist();
-
-      return {
-        result: 'NOT_FOUND',
-        verification_reference,
-        verified_at,
-        message: 'The alumni record associated with this card could not be located.'
       };
     }
 
@@ -1455,6 +1501,93 @@ class Database {
         alumni_name: al ? `${al.first_name} ${al.last_name}` : 'N/A'
       };
     });
+  }
+
+  public syncFromClient(clientData: {
+    alumni?: Alumni[];
+    academic_records?: AcademicRecord[];
+    cards?: AlumniCard[];
+    qr_codes?: AlumniQRCode[];
+  }) {
+    let modified = false;
+
+    if (Array.isArray(clientData.alumni)) {
+      for (const a of clientData.alumni) {
+        if (!a || !a.alumni_id) continue;
+        const cleanId = a.alumni_id.trim().toUpperCase();
+        const exists = this.data.alumni.some(
+          existing => existing.alumni_id.trim().toUpperCase() === cleanId
+        );
+        if (!exists) {
+          this.data.alumni.unshift({
+            ...a,
+            archived: false,
+            created_at: a.created_at || new Date().toISOString(),
+            updated_at: a.updated_at || new Date().toISOString()
+          });
+          modified = true;
+        }
+      }
+    }
+
+    if (Array.isArray(clientData.academic_records)) {
+      for (const ar of clientData.academic_records) {
+        if (!ar || !ar.alumni_id) continue;
+        const exists = this.data.academic_records.some(
+          existing =>
+            existing.alumni_id.trim().toUpperCase() === ar.alumni_id.trim().toUpperCase() &&
+            existing.degree_program === ar.degree_program
+        );
+        if (!exists) {
+          this.data.academic_records.push(ar);
+          modified = true;
+        }
+      }
+    }
+
+    if (Array.isArray(clientData.cards)) {
+      for (const c of clientData.cards) {
+        if (!c || !c.card_number) continue;
+        const cleanCard = c.card_number.trim().toUpperCase();
+        const exists = this.data.cards.some(
+          existing => existing.card_number.trim().toUpperCase() === cleanCard
+        );
+        if (!exists) {
+          this.data.cards.unshift(c);
+          modified = true;
+        }
+      }
+    }
+
+    if (Array.isArray(clientData.qr_codes)) {
+      for (const q of clientData.qr_codes) {
+        if (!q || !q.qr_value) continue;
+        const cleanQR = q.qr_value.trim().toUpperCase();
+        const exists = this.data.qr_codes.some(
+          existing => existing.qr_value.trim().toUpperCase() === cleanQR
+        );
+        if (!exists) {
+          this.data.qr_codes.unshift(q);
+          modified = true;
+        }
+      }
+    }
+
+    if (modified) {
+      this.persist();
+    }
+
+    return {
+      success: true,
+      alumni: this.data.alumni,
+      academic_records: this.data.academic_records,
+      cards: this.data.cards,
+      qr_codes: this.data.qr_codes
+    };
+  }
+
+  public getRawData(): DatabaseSchema {
+    return this.data;
   }
 }
 

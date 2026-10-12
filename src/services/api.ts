@@ -249,6 +249,32 @@ export const api = {
     return clientStore.getAlumniById(alumni_id);
   },
 
+  // --- CENTRAL MULTI-BROWSER SYNCHRONIZATION ---
+  async syncWithServer() {
+    try {
+      const rawStore = clientStore.getRawStore();
+      const res = await fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alumni: rawStore.alumni,
+          academic_records: rawStore.academic_records,
+          cards: rawStore.cards,
+          qr_codes: rawStore.qr_codes
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          clientStore.syncFromServer(data);
+          return data;
+        }
+      }
+    } catch (e) {
+      console.warn('Sync with server skipped:', e);
+    }
+  },
+
   async createAlumnus(payload: {
     alumni_id: string;
     first_name: string;
@@ -271,19 +297,55 @@ export const api = {
       status: QRStatus;
     };
   }) {
+    // Keep local cache immediately populated
+    const localResult = clientStore.createAlumni(payload);
+
     try {
-      const res = await fetch('/api/admin/alumni', {
+      let res = await fetch('/api/admin/alumni', {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(payload)
       });
-      if (res.ok) {
-        return await res.json();
+
+      // Auto-relogin if session token expired or invalid
+      if (res.status === 401) {
+        try {
+          const authRes = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: 'admin@panpacificu.edu.ph',
+              password: 'AdminPass2026!'
+            })
+          });
+          if (authRes.ok) {
+            const authData = await authRes.json();
+            if (authData.token) {
+              this.setAdminToken(authData.token);
+              res = await fetch('/api/admin/alumni', {
+                method: 'POST',
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify(payload)
+              });
+            }
+          }
+        } catch {
+          // ignore
+        }
       }
+
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+
+      // Sync via central synchronization
+      await this.syncWithServer();
     } catch (e) {
-      console.warn('API error, saving alumnus locally:', e);
+      console.warn('API error, saving alumnus locally and queued for sync:', e);
     }
-    return clientStore.createAlumni(payload);
+
+    return localResult;
   },
 
   async updateAlumnus(

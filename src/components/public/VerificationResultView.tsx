@@ -285,15 +285,15 @@ export const VerificationResultView: React.FC<VerificationResultViewProps> = ({
 
             <div className="space-y-1">
               <h1 className="text-xl sm:text-2xl font-extrabold text-red-600 tracking-tight">
-                ❌ NOT AN ALUMNI MEMBER
+                ❌ NOT REGISTERED AS ALUMNI
               </h1>
               <h2 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-wider">
-                QR CODE NOT REGISTERED
+                RECORD NOT FOUND IN DATABASE
               </h2>
             </div>
 
             <p className="text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
-              This QR code is not registered in the official Alumni Database of Panpacific University.
+              {message || 'This Alumni ID, Card Number, or QR code is not registered in the official Panpacific University Alumni Database.'}
             </p>
           </div>
 
@@ -318,7 +318,7 @@ export const VerificationResultView: React.FC<VerificationResultViewProps> = ({
               className="inline-flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Verify Another Alumni Card</span>
+              <span>Search Another Alumni ID or Card</span>
             </button>
           </div>
         </div>

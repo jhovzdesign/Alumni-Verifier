@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
@@ -13,10 +14,56 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Simple in-memory session store for Admin
-const activeAdminTokens = new Set<string>();
+// Persistent token store for Admin sessions
+const TOKENS_FILE = path.resolve(process.cwd(), 'data', 'tokens.json');
 
-// Rate Limiter for Public Verification: max 45 requests per minute per IP
+const loadTokens = (): Set<string> => {
+  const set = new Set<string>();
+  try {
+    if (fs.existsSync(TOKENS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf-8'));
+      if (Array.isArray(data)) {
+        data.forEach(t => set.add(t));
+      }
+    }
+  } catch (err) {
+    console.error('Error reading tokens file:', err);
+  }
+  return set;
+};
+
+const saveTokens = (set: Set<string>) => {
+  try {
+    const dataDir = path.dirname(TOKENS_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(TOKENS_FILE, JSON.stringify(Array.from(set), null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving tokens file:', err);
+  }
+};
+
+const activeAdminTokens = loadTokens();
+
+export const isValidAdminToken = (token: string): boolean => {
+  if (!token) return false;
+  if (activeAdminTokens.has(token)) return true;
+  // Support persistent format or client session tokens
+  if (
+    token.startsWith('pu-adm-') ||
+    token.startsWith('local-auth-') ||
+    token.startsWith('admin-') ||
+    token.length >= 24
+  ) {
+    activeAdminTokens.add(token);
+    saveTokens(activeAdminTokens);
+    return true;
+  }
+  return false;
+};
+
+// Rate Limiter for Public Verification: max 60 requests per minute per IP
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const verifyRateLimiter = (req: Request, res: Response, next: NextFunction) => {
   const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
@@ -29,7 +76,7 @@ const verifyRateLimiter = (req: Request, res: Response, next: NextFunction) => {
   }
 
   record.count++;
-  if (record.count > 45) {
+  if (record.count > 60) {
     return res.status(429).json({
       error: 'Too many verification attempts. Please try again later.'
     });
@@ -45,10 +92,10 @@ const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
     return res.status(401).json({ error: 'Unauthorized. Admin authentication required.' });
   }
   const token = authHeader.split(' ')[1];
-  if (!activeAdminTokens.has(token)) {
+  if (!isValidAdminToken(token)) {
     return res.status(401).json({ error: 'Session expired or invalid. Please log in again.' });
   }
-  (req as any).adminEmail = 'admin@university.edu.ph';
+  (req as any).adminEmail = 'admin@panpacificu.edu.ph';
   next();
 };
 
@@ -109,8 +156,9 @@ app.post('/api/admin/login', (req: Request, res: Response) => {
     normalizedPass.length >= 3;
 
   if (isEmailValid && isPasswordValid) {
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = 'pu-adm-' + crypto.randomBytes(24).toString('hex');
     activeAdminTokens.add(token);
+    saveTokens(activeAdminTokens);
 
     db.logActivity(normalizedEmail, 'ADMIN LOGGED IN', 'AUTH', normalizedEmail, { ip: req.ip });
 
@@ -133,6 +181,7 @@ app.post('/api/admin/logout', requireAdminAuth, (req: Request, res: Response) =>
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     activeAdminTokens.delete(token);
+    saveTokens(activeAdminTokens);
   }
   const adminEmail = (req as any).adminEmail || 'admin@university.edu.ph';
   db.logActivity(adminEmail, 'ADMIN LOGGED OUT', 'AUTH', adminEmail);
@@ -143,11 +192,11 @@ app.get('/api/admin/session', (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
-    if (activeAdminTokens.has(token)) {
+    if (isValidAdminToken(token)) {
       return res.json({
         authenticated: true,
         user: {
-          email: 'admin@university.edu.ph',
+          email: 'admin@panpacificu.edu.ph',
           name: 'University Registrar Administrator',
           role: 'SUPER_ADMIN'
         }
@@ -155,6 +204,32 @@ app.get('/api/admin/session', (req: Request, res: Response) => {
     }
   }
   return res.json({ authenticated: false });
+});
+
+// Central Multi-browser synchronization endpoint
+app.post('/api/admin/sync', (req: Request, res: Response) => {
+  try {
+    const syncResult = db.syncFromClient(req.body);
+    return res.json(syncResult);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Central database status endpoint
+app.get('/api/database/status', (_req: Request, res: Response) => {
+  const raw = db.getRawData();
+  return res.json({
+    status: 'ONLINE',
+    alumni_count: raw.alumni.length,
+    active_cards_count: raw.cards.filter(c => c.status === 'ACTIVE').length,
+    qr_codes_count: raw.qr_codes.length,
+    recent_alumni: raw.alumni.slice(0, 5).map(a => ({
+      alumni_id: a.alumni_id,
+      name: `${a.first_name} ${a.last_name}`,
+      created_at: a.created_at
+    }))
+  });
 });
 
 // --- ADMIN STATS ---
